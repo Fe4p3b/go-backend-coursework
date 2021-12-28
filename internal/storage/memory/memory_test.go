@@ -11,10 +11,10 @@ func Test_memory_Find(t *testing.T) {
 		},
 	}
 	tests := []struct {
+		wantErr error
 		name    string
 		value   string
 		want    string
-		wantErr error
 	}{
 		{
 			name:    "test case #1",
@@ -56,10 +56,10 @@ func Test_memory_Save(t *testing.T) {
 	}
 
 	tests := []struct {
-		want    bool
-		name    string
 		wantErr error
+		name    string
 		args    args
+		want    bool
 	}{
 		{
 			name: "test case #1",

@@ -12,8 +12,8 @@ var duplicateShortlinkError = errors.New("No such link")
 var _ repositories.ShortenerRepository = &memory{}
 
 type memory struct {
-	sync.RWMutex
 	S map[string]string
+	sync.RWMutex
 }
 
 func New(s map[string]string) *memory {

@@ -59,7 +59,7 @@ func (h *httpHandler) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err == nil && uu.Host == "" && uu.Scheme == "" {
+	if uu.Host == "" && uu.Scheme == "" {
 		http.Error(w, "Invalid URL", http.StatusInternalServerError)
 		return
 	}

@@ -14,14 +14,14 @@ import (
 
 func Test_httpHandler_handler(t *testing.T) {
 	type fields struct {
-		method string
-		url    string
 		s      shortener.ShortenerService
 		body   url.Values
+		method string
+		url    string
 	}
 	type want struct {
-		code     int
 		response string
+		code     int
 	}
 
 	m := memory.New(map[string]string{
