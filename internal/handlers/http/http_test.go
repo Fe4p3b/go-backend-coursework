@@ -1,4 +1,4 @@
-package handlers
+package http
 
 import (
 	"io"
@@ -127,10 +127,6 @@ func Test_httpHandler_handler(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// t.Errorf("%v", tt.want.response)
-			// t.Errorf("%v", string(resBody))
-			// t.Errorf("%v", reflect.DeepEqual(tt.want.response, string(resBody)))
-			// t.Errorf("Expected body %v, got %v => %v", (tt.want.response), string(resBody), string(resBody) != tt.want.response)
 			if string(resBody) != tt.want.response && tt.want.response != "" {
 				t.Errorf("Expected body %s, got %s => %v --- %v", tt.want.response, string(resBody), string(resBody) != tt.want.response, res.Header.Get("Content-Type"))
 			}
