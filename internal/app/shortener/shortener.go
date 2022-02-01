@@ -1,6 +1,8 @@
 package shortener
 
 import (
+	"fmt"
+
 	"github.com/Fe4p3b/go-backend-coursework/internal/repositories"
 	"github.com/lithammer/shortuuid"
 )
@@ -11,12 +13,14 @@ type ShortenerService interface {
 }
 
 type shortener struct {
-	r repositories.ShortenerRepository
+	r       repositories.ShortenerRepository
+	BaseURL string
 }
 
-func New(r repositories.ShortenerRepository) *shortener {
+func New(r repositories.ShortenerRepository, url string) *shortener {
 	return &shortener{
-		r: r,
+		r:       r,
+		BaseURL: url,
 	}
 }
 
@@ -30,5 +34,5 @@ func (s *shortener) Store(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return uuid, nil
+	return fmt.Sprintf("%s/%s", s.BaseURL, uuid), nil
 }

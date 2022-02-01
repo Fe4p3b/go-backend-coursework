@@ -1,79 +1,51 @@
 package http
 
 import (
+	"errors"
 	"net/http"
-	"net/url"
 
 	"github.com/Fe4p3b/go-backend-coursework/internal/app/shortener"
+	"github.com/Fe4p3b/go-backend-coursework/internal/models"
+	"github.com/Fe4p3b/go-backend-coursework/internal/storage/memory"
+	"github.com/labstack/echo/v4"
 )
 
-type httpHandler struct {
+type handler struct {
 	s shortener.ShortenerService
 }
 
-func NewHttpHandler(s shortener.ShortenerService) *httpHandler {
-	h := &httpHandler{
+func NewHandler(s shortener.ShortenerService) *handler {
+	h := &handler{
 		s: s,
 	}
-	http.HandleFunc("/", h.handler)
+
 	return h
 }
 
-func (h *httpHandler) handler(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		h.get(rw, r)
+func (h *handler) Post(c echo.Context) error {
+	url := new(models.URL)
+	if err := c.Bind(url); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if r.Method == http.MethodPost {
-		h.post(rw, r)
+	shortURL, err := h.s.Store(url.URL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	http.Error(rw, "", http.StatusMethodNotAllowed)
+	return c.JSON(http.StatusCreated, &models.URL{ShortURL: shortURL})
 }
 
-func (h *httpHandler) get(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("url")
-	if q == "" {
-		http.Error(w, "The query parameter is missing", http.StatusBadRequest)
-		return
-	}
+func (h *handler) Get(c echo.Context) error {
+	shortURL := c.Param("url")
 
-	url, err := h.s.Find(q)
+	url, err := h.s.Find(shortURL)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if errors.Is(err, memory.ErrorLinkNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
-
-func (h *httpHandler) post(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	u := r.FormValue("url")
-	uu, err := url.Parse(u)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if uu.Host == "" && uu.Scheme == "" {
-		http.Error(w, "Invalid URL", http.StatusInternalServerError)
-		return
-	}
-
-	sUrl, err := h.s.Store(u)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(sUrl))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	return c.Redirect(http.StatusTemporaryRedirect, url)
 }

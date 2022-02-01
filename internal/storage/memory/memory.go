@@ -7,8 +7,8 @@ import (
 	"github.com/Fe4p3b/go-backend-coursework/internal/repositories"
 )
 
-var noLinkFoundError = errors.New("No such link")
-var duplicateShortlinkError = errors.New("No such link")
+var ErrorLinkNotFound = errors.New("No such link")
+var ErrorDuplicateShortlink = errors.New("No such link")
 var _ repositories.ShortenerRepository = &memory{}
 
 type memory struct {
@@ -25,14 +25,14 @@ func New(s map[string]string) *memory {
 func (m *memory) Find(url string) (s string, err error) {
 	v, ok := m.S[url]
 	if !ok {
-		return "", noLinkFoundError
+		return "", ErrorLinkNotFound
 	}
 	return v, nil
 }
 
 func (m *memory) Save(uuid string, url string) error {
 	if _, ok := m.S[uuid]; ok {
-		return duplicateShortlinkError
+		return ErrorDuplicateShortlink
 	}
 
 	m.Lock()

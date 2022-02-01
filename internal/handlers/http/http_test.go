@@ -1,33 +1,129 @@
 package http
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 
 	"github.com/Fe4p3b/go-backend-coursework/internal/app/shortener"
 	"github.com/Fe4p3b/go-backend-coursework/internal/storage/memory"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
-func Test_httpHandler_handler(t *testing.T) {
+func Test_httpHandler_Get(t *testing.T) {
 	type fields struct {
 		s      shortener.ShortenerService
-		body   url.Values
 		method string
 		url    string
 	}
 	type want struct {
-		response string
 		code     int
+		response string
+		err      bool
+	}
+
+	m := memory.New(map[string]string{
+		"asdf": "http://yandex.ru",
+	})
+	s := shortener.New(m, "http://localhost:8080")
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "test case #1",
+			fields: fields{
+				s:      s,
+				method: http.MethodGet,
+				url:    "asdf",
+			},
+			want: want{
+				code:     http.StatusTemporaryRedirect,
+				response: "",
+				err:      false,
+			},
+		},
+		{
+			name: "test case #2",
+			fields: fields{
+				s:      s,
+				method: http.MethodGet,
+				url:    "qwerty",
+			},
+			want: want{
+				code:     http.StatusNotFound,
+				response: "Not Found",
+				err:      true,
+			},
+		},
+		{
+			name: "test case #3",
+			fields: fields{
+				s:      s,
+				method: http.MethodGet,
+				url:    "",
+			},
+			want: want{
+				code:     http.StatusNotFound,
+				response: "Not Found",
+				err:      true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(tt.fields.s)
+			request := httptest.NewRequest(tt.fields.method, "/", nil)
+			w := httptest.NewRecorder()
+
+			e := echo.New()
+			c := e.NewContext(request, w)
+
+			c.SetPath("/:url")
+			c.SetParamNames("url")
+			c.SetParamValues(tt.fields.url)
+
+			err := h.Get(c)
+
+			if err != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.want.code, err.(*echo.HTTPError).Code)
+				assert.Equal(t, tt.want.response, err.(*echo.HTTPError).Message)
+				return
+			}
+			// r := chi.NewRouter()
+			// r.Get("/{url}", h.GetURL)
+			// r.ServeHTTP(w, request)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want.code, w.Code)
+			assert.Equal(t, tt.want.response, w.Body.String())
+
+		})
+	}
+}
+
+func Test_httpHandler_post(t *testing.T) {
+	type fields struct {
+		s      shortener.ShortenerService
+		method string
+		url    string
+		body   string
+	}
+	type want struct {
+		code     int
+		response string
+		err      bool
 	}
 
 	m := memory.New(map[string]string{
 		"asdf": "yandex.ru",
 	})
-	s := shortener.New(m)
+	s := shortener.New(m, "http://localhost:8080")
 
 	tests := []struct {
 		name   string
@@ -40,13 +136,12 @@ func Test_httpHandler_handler(t *testing.T) {
 				s:      s,
 				method: http.MethodPost,
 				url:    "/",
-				body: url.Values{
-					"url": []string{"https://yandex.ru"},
-				},
+				body:   `{"url":"https://yandex.ru"}`,
 			},
 			want: want{
 				code:     http.StatusCreated,
 				response: "",
+				err:      false,
 			},
 		},
 		{
@@ -55,80 +150,39 @@ func Test_httpHandler_handler(t *testing.T) {
 				s:      s,
 				method: http.MethodPost,
 				url:    "/",
-				body: url.Values{
-					"url": []string{"yandex.ru"},
-				},
+				body:   `{"url":"yandex.ru"}`,
 			},
 			want: want{
-				code:     http.StatusInternalServerError,
-				response: "Invalid URL\n\n",
-			},
-		},
-		{
-			name: "test case #3",
-			fields: fields{
-				s:      s,
-				method: http.MethodGet,
-				url:    "/?url=asdf",
-				body:   nil,
-			},
-			want: want{
-				code:     http.StatusTemporaryRedirect,
-				response: "<a href=\"/yandex.ru\">Temporary Redirect</a>.\n\n\n",
-			},
-		},
-		{
-			name: "test case #4",
-			fields: fields{
-				s:      s,
-				method: http.MethodGet,
-				url:    "/",
-				body:   nil,
-			},
-			want: want{
-				code:     http.StatusBadRequest,
-				response: "The query parameter is missing\n\n",
-			},
-		},
-		{
-			name: "test case #5",
-			fields: fields{
-				s:      s,
-				method: http.MethodPut,
-				url:    "/",
-				body:   nil,
-			},
-			want: want{
-				code:     http.StatusMethodNotAllowed,
-				response: "\n",
+				code:     http.StatusCreated,
+				response: "",
+				err:      false,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			httpHandler := &httpHandler{
-				s: tt.fields.s,
-			}
-			request := httptest.NewRequest(tt.fields.method, tt.fields.url, strings.NewReader(tt.fields.body.Encode()))
-			if tt.fields.body != nil {
-				request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-			}
+			h := NewHandler(tt.fields.s)
+
+			request := httptest.NewRequest(tt.fields.method, tt.fields.url, strings.NewReader(tt.fields.body))
+			request.Header.Set("Content-Type", "application/json")
+
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(httpHandler.handler)
-			h.ServeHTTP(w, request)
-			res := w.Result()
-			if res.StatusCode != tt.want.code {
-				t.Errorf("Expected status code %d, got %d", tt.want.code, w.Code)
+
+			e := echo.New()
+			c := e.NewContext(request, w)
+
+			err := h.Post(c)
+			if tt.want.err {
+				assert.Error(t, err)
+				assert.Equal(t, tt.want.code, err.(*echo.HTTPError).Code)
+				assert.Equal(t, tt.want.response, err.(*echo.HTTPError).Message)
+				return
 			}
 
-			defer res.Body.Close()
-			resBody, err := io.ReadAll(res.Body)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if string(resBody) != tt.want.response && tt.want.response != "" {
-				t.Errorf("Expected body %s, got %s => %v --- %v", tt.want.response, string(resBody), string(resBody) != tt.want.response, res.Header.Get("Content-Type"))
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want.code, w.Code)
+			if tt.want.response != "" {
+				assert.Equal(t, tt.want.response, w.Body.String())
 			}
 		})
 	}
