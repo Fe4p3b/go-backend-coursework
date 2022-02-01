@@ -18,7 +18,7 @@ func main() {
 
 	m := memory.New(map[string]string{})
 	s := shortener.New(m, cfg.BaseURL)
-	h := http.NewHandler(s)
+	h := http.New(s)
 	server := echo.New()
 	server.GET("/:url", h.Get)
 	server.POST("/", h.Post)

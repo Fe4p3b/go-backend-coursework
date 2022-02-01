@@ -11,10 +11,10 @@ import (
 )
 
 type handler struct {
-	s shortener.ShortenerService
+	s shortener.Service
 }
 
-func NewHandler(s shortener.ShortenerService) *handler {
+func New(s shortener.Service) *handler {
 	h := &handler{
 		s: s,
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/lithammer/shortuuid"
 )
 
-type ShortenerService interface {
+type Service interface {
 	Find(string) (string, error)
 	Store(string) (string, error)
 }

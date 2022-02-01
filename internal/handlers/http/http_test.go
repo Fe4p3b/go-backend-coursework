@@ -14,14 +14,14 @@ import (
 
 func Test_httpHandler_Get(t *testing.T) {
 	type fields struct {
-		s      shortener.ShortenerService
+		s      shortener.Service
 		method string
 		url    string
 	}
 	type want struct {
-		code     int
 		response string
 		err      bool
+		code     int
 	}
 
 	m := memory.New(map[string]string{
@@ -76,7 +76,7 @@ func Test_httpHandler_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(tt.fields.s)
+			h := New(tt.fields.s)
 			request := httptest.NewRequest(tt.fields.method, "/", nil)
 			w := httptest.NewRecorder()
 
@@ -109,15 +109,15 @@ func Test_httpHandler_Get(t *testing.T) {
 
 func Test_httpHandler_post(t *testing.T) {
 	type fields struct {
-		s      shortener.ShortenerService
+		s      shortener.Service
 		method string
 		url    string
 		body   string
 	}
 	type want struct {
-		code     int
 		response string
 		err      bool
+		code     int
 	}
 
 	m := memory.New(map[string]string{
@@ -161,7 +161,7 @@ func Test_httpHandler_post(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(tt.fields.s)
+			h := New(tt.fields.s)
 
 			request := httptest.NewRequest(tt.fields.method, tt.fields.url, strings.NewReader(tt.fields.body))
 			request.Header.Set("Content-Type", "application/json")
