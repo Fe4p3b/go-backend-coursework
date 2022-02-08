@@ -25,12 +25,12 @@ func New(s shortener.Service) *handler {
 func (h *handler) Post(c echo.Context) error {
 	url := new(models.URL)
 	if err := c.Bind(url); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	shortURL, err := h.s.Store(url.URL)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusCreated, &models.URL{ShortURL: shortURL})
