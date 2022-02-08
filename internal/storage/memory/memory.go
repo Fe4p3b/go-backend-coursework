@@ -1,0 +1,42 @@
+package memory
+
+import (
+	"errors"
+	"sync"
+
+	"github.com/Fe4p3b/go-backend-coursework/internal/repositories"
+)
+
+var ErrorLinkNotFound = errors.New("No such link")
+var ErrorDuplicateShortlink = errors.New("No such link")
+var _ repositories.ShortenerRepository = &memory{}
+
+type memory struct {
+	S map[string]string
+	sync.RWMutex
+}
+
+func New(s map[string]string) *memory {
+	return &memory{
+		S: s,
+	}
+}
+
+func (m *memory) Find(url string) (s string, err error) {
+	v, ok := m.S[url]
+	if !ok {
+		return "", ErrorLinkNotFound
+	}
+	return v, nil
+}
+
+func (m *memory) Save(uuid string, url string) error {
+	if _, ok := m.S[uuid]; ok {
+		return ErrorDuplicateShortlink
+	}
+
+	m.Lock()
+	m.S[uuid] = url
+	m.Unlock()
+	return nil
+}
