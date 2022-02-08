@@ -32,7 +32,7 @@ func main() {
 
 	server.Use(middleware.Gzip())
 
-	if err := server.Start(cfg.Address); err != nil {
+	if err := server.Start(cfg.Address + ":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}
 }
