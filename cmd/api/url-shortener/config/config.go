@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Address     string `env:"SERVER_ADDRESS,required" envDefault:"0.0.0.0:8080"`
 	BaseURL     string `env:"BASE_URL,required" envDefault:"http://localhost:8080"`
-	DatabaseDSN string `env:"DATABASE_DSN,required" envDefault:"postgres://gopher:12345@postgres:5432/shortener"`
+	DatabaseDSN string `env:"DATABASE_URL,required" envDefault:"postgres://gopher:12345@postgres:5432/shortener"`
 }
 
 func (c *Config) Read() error {
