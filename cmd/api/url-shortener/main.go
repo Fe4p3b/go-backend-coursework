@@ -34,7 +34,8 @@ func main() {
 	server.Use(middleware.CORSWithConfig(
 		middleware.CORSConfig{
 			AllowOrigins: []string{
-				"*",
+				"http://localhost:8081",
+				"https://gb-backend1-coursework-front.herokuapp.com",
 			},
 			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAcceptEncoding},
 		},
