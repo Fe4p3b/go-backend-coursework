@@ -31,7 +31,14 @@ func main() {
 	server.POST("/", h.Post)
 
 	server.Use(middleware.Gzip())
-
+	server.Use(middleware.CORSWithConfig(
+		middleware.CORSConfig{
+			AllowOrigins: []string{
+				"*",
+			},
+			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAcceptEncoding},
+		},
+	))
 	if err := server.Start(cfg.Address + ":" + cfg.Port); err != nil {
 		log.Fatal(err)
 	}
