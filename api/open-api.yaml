@@ -1,0 +1,58 @@
+openapi: 3.0.1
+info:
+  title: URL Shortener
+  version: 1.0.0
+components:
+  schemas:
+    URL:
+      type: object
+      properties:
+        original_url:
+          type: string
+        short_url:
+          type: string
+        counter:
+          type: integer
+
+paths:
+  /{url}:
+    get:
+      summary: "redirect to original url"
+      operationId: "Redirect"
+      responses:
+        307:
+          description: successful redirect
+  /{url}/stats:
+    get:
+      summary: "get number of short url entries"
+      operationId: "GetStats"
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  counter:
+                    type: integer
+  /:
+    post:
+      summary: "create short url"
+      operationId: "CreateShortURL"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                original_url:
+                  type: string
+      responses:
+        201:
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  short_url:
+                    type: string
