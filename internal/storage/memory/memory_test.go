@@ -9,6 +9,9 @@ func Test_memory_Find(t *testing.T) {
 		S: map[string]string{
 			"asdf": "yandex.ru",
 		},
+		C: map[string]int{
+			"asdf": 5,
+		},
 	}
 	tests := []struct {
 		wantErr error
@@ -48,6 +51,9 @@ func Test_memory_Save(t *testing.T) {
 	storage := &memory{
 		S: map[string]string{
 			"asdf": "yandex.ru",
+		},
+		C: map[string]int{
+			"asdf": 5,
 		},
 	}
 	type args struct {

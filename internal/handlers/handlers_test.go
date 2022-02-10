@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"net/http"
@@ -24,9 +24,14 @@ func Test_httpHandler_Get(t *testing.T) {
 		code     int
 	}
 
-	m := memory.New(map[string]string{
-		"asdf": "http://yandex.ru",
-	})
+	m := memory.New(
+		map[string]string{
+			"asdf": "http://yandex.ru",
+		},
+		map[string]int{
+			"asdf": 5,
+		},
+	)
 	s := shortener.New(m, "http://localhost:8080")
 
 	tests := []struct {
@@ -120,9 +125,14 @@ func Test_httpHandler_post(t *testing.T) {
 		code     int
 	}
 
-	m := memory.New(map[string]string{
-		"asdf": "yandex.ru",
-	})
+	m := memory.New(
+		map[string]string{
+			"asdf": "yandex.ru",
+		},
+		map[string]int{
+			"asdf": 5,
+		},
+	)
 	s := shortener.New(m, "http://localhost:8080")
 
 	tests := []struct {

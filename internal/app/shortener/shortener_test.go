@@ -16,6 +16,9 @@ func Test_shortener_Find(t *testing.T) {
 		map[string]string{
 			"asdf": "yandex.ru",
 		},
+		map[string]int{
+			"asdf": 5,
+		},
 	)
 
 	tests := []struct {
@@ -70,6 +73,9 @@ func Test_shortener_Store(t *testing.T) {
 		map[string]string{
 			"asdf": "yandex.ru",
 		},
+		map[string]int{
+			"asdf": 5,
+		},
 	)
 	tests := []struct {
 		name    string
@@ -85,22 +91,6 @@ func Test_shortener_Store(t *testing.T) {
 			urls:    []string{"google.com", "yandex.ru", "yahoo.com", "google.com", "yandex.ru", "yahoo.com"},
 			wantErr: false,
 		},
-		// {
-		// 	name: "test case #2",
-		// 	fields: fields{
-		// 		r: storage,
-		// 	},
-		// 	urls:    []string{"google.com"},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "test case #2",
-		// 	fields: fields{
-		// 		r: storage,
-		// 	},
-		// 	urls:    []string{"google.com"},
-		// 	wantErr: true,
-		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

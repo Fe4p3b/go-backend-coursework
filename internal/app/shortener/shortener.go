@@ -10,6 +10,8 @@ import (
 type Service interface {
 	Find(string) (string, error)
 	Store(string) (string, error)
+	AddVisitorCount(string) error
+	GetVisitorCounter(string) (int, error)
 }
 
 type shortener struct {
@@ -26,6 +28,14 @@ func New(r repositories.ShortenerRepository, url string) *shortener {
 
 func (s *shortener) Find(url string) (string, error) {
 	return s.r.Find(url)
+}
+
+func (s *shortener) AddVisitorCount(shorURL string) error {
+	return s.r.AddCount(shorURL)
+}
+
+func (s *shortener) GetVisitorCounter(shorURL string) (int, error) {
+	return s.r.GetVisitorCounter(shorURL)
 }
 
 func (s *shortener) Store(url string) (string, error) {
