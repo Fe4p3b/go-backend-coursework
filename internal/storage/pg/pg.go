@@ -24,7 +24,7 @@ func NewConnection(dsn string) (*pg, error) {
 	return &pg{db: conn}, nil
 }
 
-func (p *pg) Find(sURL string) (string, error) {
+func (p *pg) Find(shortURL string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -32,7 +32,7 @@ func (p *pg) Find(sURL string) (string, error) {
 
 	var URL string
 
-	row := p.db.QueryRowContext(ctx, sql, sURL)
+	row := p.db.QueryRowContext(ctx, sql, shortURL)
 
 	if err := row.Scan(&URL); err != nil {
 		return "", err
@@ -53,4 +53,49 @@ func (p *pg) Save(shortURL string, URL string) error {
 	}
 
 	return err
+}
+
+func (p *pg) AddCount(shortURL string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	tx, err := p.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.PrepareContext(ctx, "UPDATE shortener.shortener SET visitors_counter = visitors_counter + 1 WHERE short_url=$1")
+	if err != nil {
+		return err
+	}
+
+	if _, err = stmt.ExecContext(ctx, shortURL); err != nil {
+		if err = tx.Rollback(); err != nil {
+			return err
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *pg) GetVisitorCounter(shortURL string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	sql := `SELECT visitors_counter FROM shortener.shortener WHERE short_url=$1`
+
+	var counter int
+
+	row := p.db.QueryRowContext(ctx, sql, shortURL)
+
+	if err := row.Scan(&counter); err != nil {
+		return 0, err
+	}
+
+	return counter, nil
 }

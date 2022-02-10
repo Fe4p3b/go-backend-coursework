@@ -6,8 +6,11 @@ services:
       context: ./
       dockerfile: ./build/Dockerfile
     environment:
-      - SERVER_ADDRESS=0.0.0.0:8080
+      - SERVER_ADDRESS=0.0.0.0
+      - PORT=8080
+      - LOG_LEVEL=INFO
       - BASE_URL=http://localhost:8080
+      - DATABASE_URL=postgres://gopher:12345@postgres:5432/shortener
     ports:
       - 8080:8080
 

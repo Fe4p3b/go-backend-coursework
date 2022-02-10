@@ -17,7 +17,8 @@ DROP TABLE IF EXISTS shortener.shortener CASCADE;
 CREATE TABLE shortener.shortener (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     short_url VARCHAR(255) NOT NULL,
-    original_URL TEXT NOT NULL
+    original_URL TEXT NOT NULL,
+    visitors_counter INT DEFAULT 0
 );
 
 CREATE INDEX ON shortener.shortener(short_url);
